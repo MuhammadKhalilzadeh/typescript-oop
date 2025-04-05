@@ -1,0 +1,32 @@
+{
+  "name": "typescript-oop",
+  "version": "1.0.0",
+  "description": "learning object oriented programming in typescript",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch \"src/**/*.ts\" --exec \"ts-node\" src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MuhammadKhalilzadeh/typescript-oop.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MuhammadKhalilzadeh/typescript-oop/issues"
+  },
+  "homepage": "https://github.com/MuhammadKhalilzadeh/typescript-oop#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
