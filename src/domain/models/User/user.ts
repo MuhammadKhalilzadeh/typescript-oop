@@ -1,103 +1,94 @@
 import { Role } from "../Role/role";
 
 export class User {
-  private _name: string;
-  private _surname: string;
-  private _email: string;
-  private _password_hash: string;
-  private _role: Role;
-  private _created_at: Date;
-  private _last_login: Date;
-  private _id?: number;
-
   constructor(
-    name: string,
-    surname: string,
-    email: string,
-    password_hash: string,
-    role: Role,
-    created_at: Date,
-    last_login: Date,
-    id?: number
+    public name: string,
+    public surname: string,
+    public email: string,
+    public password_hash: string,
+    public role: Role,
+    public created_at: Date,
+    public last_login: Date,
+    public id?: number
   ) {
-    this._name = name;
-    this._surname = surname;
-    this._email = email;
-    this._password_hash = password_hash;
-    this._role = role;
-    this._created_at = created_at;
-    this._last_login = last_login;
-    this._id = id;
+    this.id = id;
+    this.name = name;
+    this.surname = surname;
+    this.email = email;
+    this.password_hash = password_hash;
+    this.role = role;
+    this.created_at = created_at;
+    this.last_login = last_login;
   }
 
   // Getters
-  public get name(): string {
-    return this._name;
+  public getName(): string {
+    return this.name;
   }
 
-  public get surname(): string {
-    return this._surname;
+  public getSurname(): string {
+    return this.surname;
   }
 
-  public get fullName(): string {
-    return `${this._name} ${this._surname}`;
+  public getFullName(): string {
+    return `${this.name} ${this.surname}`;
   }
 
-  public get role(): string {
-    return this._role.name;
+  public getRole(): string {
+    return this.role.getName();
   }
 
-  public get created_at(): string {
-    return this._created_at.toISOString();
+  public getCreatedAt(): string {
+    return this.created_at.toISOString();
   }
 
-  public get last_login(): string {
-    return this._last_login.toISOString();
+  public getLastLogin(): string {
+    return this.last_login.toISOString();
   }
 
-  public get id(): number | undefined {
-    return this._id;
+  public getId(): number | undefined {
+    return this.id;
   }
 
   public toJSON(): object {
     return {
-      id: this._id,
-      name: this._name,
-      surname: this._surname,
-      email: this._email,
-      password_hash: this._password_hash,
-      role: this._role,
-      created_at: this._created_at,
-      last_login: this._last_login,
+      id: this.id,
+      name: this.name,
+      surname: this.surname,
+      email: this.email,
+      password_hash: this.password_hash,
+      role: this.role,
+      created_at: this.created_at,
+      last_login: this.last_login,
     };
   }
 
   // Setters
-  public set name(name: string) {
-    this._name = name;
+  public setName(name: string): void {
+    this.name = name;
   }
 
-  public set surname(surname: string) {
-    this._surname = surname;
+  public setSurname(surname: string): void {
+    this.surname = surname;
   }
 
-  public set email(email: string) {
-    this._email = email;
+  public setEmail(email: string): void {
+    this.email = email;
   }
 
-  public set password_hash(password_hash: string) {
-    this._password_hash = password_hash;
+  public setPasswordHash(password_hash: string): void {
+    this.password_hash = password_hash;
   }
 
-  public set role(role: Role) {
-    this._role = role;
+  public setRole(role: Role): void {
+    this.role = role;
   }
 
-  public set created_at(created_at: Date) {
-    this._created_at = created_at;
+  public setCreatedAt(created_at: Date): void {
+    this.created_at = created_at;
   }
 
-  public set last_login(last_login: Date) {
-    this._last_login = last_login;
+  public setLastLogin(last_login: Date): void {
+    this.last_login = last_login;
   }
 }
