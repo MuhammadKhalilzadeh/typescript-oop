@@ -21,7 +21,11 @@
   },
   "homepage": "https://github.com/MuhammadKhalilzadeh/typescript-oop#readme",
   "dependencies": {
-    "express": "^5.1.0"
+    "@types/bcrypt": "^5.0.2",
+    "@types/validator": "^13.12.3",
+    "bcrypt": "^5.1.1",
+    "express": "^5.1.0",
+    "validator": "^13.15.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
