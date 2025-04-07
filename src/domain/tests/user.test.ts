@@ -1,169 +1,284 @@
 import { User } from "../models/User/user";
 import { Role } from "../models/Role/role";
-import { hashPassword } from "../security/hasher";
-import { isValidEmail } from "../validations/emailValidator";
-import { checkStringValidation } from "../validations/stringValidator";
+import CustomException from "../exceptions/custom.exception";
 
-// Mock dependencies
-jest.mock("../security/hasher");
-jest.mock("../validations/emailValidator");
-jest.mock("../validations/stringValidator");
+// Mock the hasher module
+jest.mock("../security/hasher", () => ({
+  hashPassword: jest.fn().mockResolvedValue("hashedPassword123"),
+}));
 
-describe("User.create", () => {
-  // Setup common test variables
-  const validName = "John";
-  const validSurname = "Doe";
-  const validEmail = "john.doe@example.com";
-  const validPassword = "Password123!";
-  const mockRole = new Role("editor", 1);
+// Mock the validators
+jest.mock("../validations/emailValidator", () => ({
+  isValidEmail: jest.fn().mockReturnValue(true),
+}));
 
-  // Reset mocks before each test
+jest.mock("../validations/stringValidator", () => ({
+  checkStringValidation: jest
+    .fn()
+    .mockReturnValue({ accepted: true, message: "" }),
+}));
+
+describe("User Class", () => {
+  let user: User;
+  let role: Role;
+  const testDate = new Date("2023-01-01T00:00:00.000Z");
+
   beforeEach(() => {
-    jest.resetAllMocks();
+    // Create a role instance
+    role = new Role("admin", 1);
 
-    // Setup default mock implementations
-    (hashPassword as jest.Mock).mockResolvedValue("hashedPassword123");
-    (isValidEmail as jest.Mock).mockReturnValue(true);
-    (checkStringValidation as jest.Mock).mockReturnValue({
-      accepted: true,
-      message: "",
+    // Create a user instance
+    user = new User(
+      "John",
+      "Doe",
+      "john.doe@example.com",
+      "password123",
+      role,
+      testDate,
+      testDate,
+      1
+    );
+  });
+
+  describe("Constructor", () => {
+    it("should create a user with the provided properties", () => {
+      expect(user.getName()).toBe("John");
+      expect(user.getSurname()).toBe("Doe");
+      expect(user.getFullName()).toBe("John Doe");
+      expect(user.email).toBe("john.doe@example.com");
+      expect(user.password).toBe("password123");
+      expect(user.getRole()).toBe("admin");
+      expect(user.getCreatedAt()).toBe(testDate.toISOString());
+      expect(user.getLastLogin()).toBe(testDate.toISOString());
+      expect(user.getId()).toBe(1);
     });
   });
 
-  it("should create a user successfully with valid inputs", async () => {
-    // Arrange
-    const expectedHashedPassword = "hashedPassword123";
-    (hashPassword as jest.Mock).mockResolvedValue(expectedHashedPassword);
-
-    // Act
-    const user = await User.prototype.create(
-      validName,
-      validSurname,
-      validEmail,
-      validPassword,
-      mockRole
-    );
-
-    // Assert
-    expect(user).toBeInstanceOf(User);
-    expect(user.getName()).toBe(validName);
-    expect(user.getSurname()).toBe(validSurname);
-    expect(user.email).toBe(validEmail);
-    expect(user.password).toBe(expectedHashedPassword);
-    expect(user.getRole()).toBe(mockRole.getName());
-    expect(user.getCreatedAt()).toBeDefined();
-    expect(user.getLastLogin()).toBeDefined();
-
-    // Verify validation functions were called
-    expect(checkStringValidation).toHaveBeenCalledWith(
-      "name",
-      validName,
-      3,
-      128
-    );
-    expect(checkStringValidation).toHaveBeenCalledWith(
-      "surname",
-      validSurname,
-      3,
-      128
-    );
-    expect(isValidEmail).toHaveBeenCalledWith(validEmail);
-    expect(checkStringValidation).toHaveBeenCalledWith(
-      "Password",
-      validPassword,
-      8,
-      128,
-      true,
-      true,
-      true,
-      true,
-      "password"
-    );
-    expect(hashPassword).toHaveBeenCalledWith(validPassword);
-  });
-
-  it("should throw an error when name validation fails", async () => {
-    // Arrange
-    const invalidName = "Jo"; // Too short
-    (checkStringValidation as jest.Mock).mockReturnValueOnce({
-      accepted: false,
-      message: "Name must be between 3 and 128 characters",
+  describe("Getters", () => {
+    it("should return the correct name", () => {
+      expect(user.getName()).toBe("John");
     });
 
-    // Act & Assert
-    await expect(
-      User.prototype.create(
-        invalidName,
-        validSurname,
-        validEmail,
-        validPassword,
-        mockRole
-      )
-    ).rejects.toThrow("Name must be between 3 and 128 characters");
+    it("should return the correct surname", () => {
+      expect(user.getSurname()).toBe("Doe");
+    });
+
+    it("should return the correct full name", () => {
+      expect(user.getFullName()).toBe("John Doe");
+    });
+
+    it("should return the correct email", () => {
+      expect(user.email).toBe("john.doe@example.com");
+    });
+
+    it("should return the correct password", () => {
+      expect(user.password).toBe("password123");
+    });
+
+    it("should return the correct role name", () => {
+      expect(user.getRole()).toBe("admin");
+    });
+
+    it("should return the correct created_at date", () => {
+      expect(user.getCreatedAt()).toBe(testDate.toISOString());
+    });
+
+    it("should return the correct last_login date", () => {
+      expect(user.getLastLogin()).toBe(testDate.toISOString());
+    });
+
+    it("should return the correct id", () => {
+      expect(user.getId()).toBe(1);
+    });
   });
 
-  it("should throw an error when surname validation fails", async () => {
-    // Arrange
-    const invalidSurname = "Do"; // Too short
-    (checkStringValidation as jest.Mock)
-      .mockReturnValueOnce({ accepted: true, message: "" }) // For name
-      .mockReturnValueOnce({
+  describe("Setters", () => {
+    it("should set the name correctly", () => {
+      user.setName("Jane");
+      expect(user.getName()).toBe("Jane");
+    });
+
+    it("should set the surname correctly", () => {
+      user.setSurname("Smith");
+      expect(user.getSurname()).toBe("Smith");
+    });
+
+    it("should set the email correctly", () => {
+      user.setEmail("jane.smith@example.com");
+      expect(user.email).toBe("jane.smith@example.com");
+    });
+
+    it("should set the password hash correctly", () => {
+      user.setPasswordHash("newHashedPassword");
+      expect(user.password).toBe("newHashedPassword");
+    });
+
+    it("should set the role correctly", () => {
+      const newRole = new Role("editor", 2);
+      user.setRole(newRole);
+      expect(user.getRole()).toBe("editor");
+    });
+
+    it("should set the created_at date correctly", () => {
+      const newDate = new Date("2023-02-01T00:00:00.000Z");
+      user.setCreatedAt(newDate);
+      expect(user.getCreatedAt()).toBe(newDate.toISOString());
+    });
+
+    it("should set the last_login date correctly", () => {
+      const newDate = new Date("2023-02-01T00:00:00.000Z");
+      user.setLastLogin(newDate);
+      expect(user.getLastLogin()).toBe(newDate.toISOString());
+    });
+  });
+
+  describe("hashUserPassword", () => {
+    it("should hash the password correctly", async () => {
+      const { hashPassword } = require("../security/hasher");
+
+      await user.hashUserPassword("newPassword");
+
+      expect(hashPassword).toHaveBeenCalledWith("newPassword");
+      expect(user.password).toBe("hashedPassword123");
+    });
+  });
+
+  describe("create", () => {
+    it("should create a new user with valid data", async () => {
+      const { hashPassword } = require("../security/hasher");
+      const { isValidEmail } = require("../validations/emailValidator");
+      const {
+        checkStringValidation,
+      } = require("../validations/stringValidator");
+
+      const newRole = new Role("reviewer");
+      const newUser = await user.create(
+        "Jane",
+        "Smith",
+        "jane.smith@example.com",
+        "Password123!",
+        newRole
+      );
+
+      expect(checkStringValidation).toHaveBeenCalledWith(
+        "name",
+        "Jane",
+        3,
+        128
+      );
+      expect(checkStringValidation).toHaveBeenCalledWith(
+        "surname",
+        "Smith",
+        3,
+        128
+      );
+      expect(isValidEmail).toHaveBeenCalledWith("jane.smith@example.com");
+      expect(checkStringValidation).toHaveBeenCalledWith(
+        "Password",
+        "Password123!",
+        8,
+        128,
+        true,
+        true,
+        true,
+        true,
+        "password"
+      );
+      expect(hashPassword).toHaveBeenCalledWith("Password123!");
+
+      expect(newUser.getName()).toBe("Jane");
+      expect(newUser.getSurname()).toBe("Smith");
+      expect(newUser.email).toBe("jane.smith@example.com");
+      expect(newUser.password).toBe("hashedPassword123");
+      expect(newUser.getRole()).toBe("reviewer");
+    });
+
+    it("should throw an exception when name validation fails", async () => {
+      const {
+        checkStringValidation,
+      } = require("../validations/stringValidator");
+      checkStringValidation.mockReturnValueOnce({
         accepted: false,
-        message: "Surname must be between 3 and 128 characters",
-      }); // For surname
+        message: "Name is too short",
+      });
 
-    // Act & Assert
-    await expect(
-      User.prototype.create(
-        validName,
-        invalidSurname,
-        validEmail,
-        validPassword,
-        mockRole
-      )
-    ).rejects.toThrow("Surname must be between 3 and 128 characters");
-  });
+      const newRole = new Role("reviewer");
 
-  it("should throw an error when email validation fails", async () => {
-    // Arrange
-    const invalidEmail = "not-an-email";
-    (isValidEmail as jest.Mock).mockReturnValue(false);
+      await expect(
+        user.create(
+          "Jo", // Too short name
+          "Smith",
+          "jane.smith@example.com",
+          "Password123!",
+          newRole
+        )
+      ).rejects.toThrow(CustomException);
+    });
 
-    // Act & Assert
-    await expect(
-      User.prototype.create(
-        validName,
-        validSurname,
-        invalidEmail,
-        validPassword,
-        mockRole
-      )
-    ).rejects.toThrow("Invalid email");
-  });
+    it("should throw an exception when surname validation fails", async () => {
+      const {
+        checkStringValidation,
+      } = require("../validations/stringValidator");
+      checkStringValidation
+        .mockReturnValueOnce({ accepted: true, message: "" }) // Name validation passes
+        .mockReturnValueOnce({
+          accepted: false,
+          message: "Surname is too short",
+        }); // Surname validation fails
 
-  it("should throw an error when password validation fails", async () => {
-    // Arrange
-    const invalidPassword = "weak"; // Too short and missing required characters
-    (checkStringValidation as jest.Mock)
-      .mockReturnValueOnce({ accepted: true, message: "" }) // For name
-      .mockReturnValueOnce({ accepted: true, message: "" }) // For surname
-      .mockReturnValueOnce({
-        accepted: false,
-        message:
-          "Password must be between 8 and 128 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character",
-      }); // For password
+      const newRole = new Role("reviewer");
 
-    // Act & Assert
-    await expect(
-      User.prototype.create(
-        validName,
-        validSurname,
-        validEmail,
-        invalidPassword,
-        mockRole
-      )
-    ).rejects.toThrow(
-      "Password must be between 8 and 128 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-    );
+      await expect(
+        user.create(
+          "Jane",
+          "Sm", // Too short surname
+          "jane.smith@example.com",
+          "Password123!",
+          newRole
+        )
+      ).rejects.toThrow(CustomException);
+    });
+
+    it("should throw an exception when email validation fails", async () => {
+      const { isValidEmail } = require("../validations/emailValidator");
+      isValidEmail.mockReturnValueOnce(false);
+
+      const newRole = new Role("reviewer");
+
+      await expect(
+        user.create(
+          "Jane",
+          "Smith",
+          "invalid-email", // Invalid email
+          "Password123!",
+          newRole
+        )
+      ).rejects.toThrow(CustomException);
+    });
+
+    it("should throw an exception when password validation fails", async () => {
+      const {
+        checkStringValidation,
+      } = require("../validations/stringValidator");
+      checkStringValidation
+        .mockReturnValueOnce({ accepted: true, message: "" }) // Name validation passes
+        .mockReturnValueOnce({ accepted: true, message: "" }) // Surname validation passes
+        .mockReturnValueOnce({
+          accepted: false,
+          message: "Password is too weak",
+        }); // Password validation fails
+
+      const newRole = new Role("reviewer");
+
+      await expect(
+        user.create(
+          "Jane",
+          "Smith",
+          "jane.smith@example.com",
+          "weak", // Weak password
+          newRole
+        )
+      ).rejects.toThrow(CustomException);
+    });
   });
 });

@@ -2,6 +2,7 @@ import { hashPassword } from "../../security/hasher";
 import { isValidEmail } from "../../validations/emailValidator";
 import { checkStringValidation } from "../../validations/stringValidator";
 import { Role } from "../Role/role";
+import CustomException from "../../exceptions/custom.exception";
 
 export class User {
   constructor(
@@ -119,19 +120,31 @@ export class User {
     const nameValidation = checkStringValidation("name", name, 3, 128);
 
     if (!nameValidation.accepted) {
-      throw new Error(nameValidation.message);
+      throw new CustomException(
+        nameValidation.message,
+        400,
+        "Name validation failed"
+      );
     }
 
     const surnameValidation = checkStringValidation("surname", surname, 3, 128);
 
     if (!surnameValidation.accepted) {
-      throw new Error(surnameValidation.message);
+      throw new CustomException(
+        surnameValidation.message,
+        400,
+        "Surname validation failed"
+      );
     }
 
     const emailValidation = isValidEmail(email);
 
     if (!emailValidation) {
-      throw new Error("Invalid email");
+      throw new CustomException(
+        "Invalid email format",
+        400,
+        "Email validation failed"
+      );
     }
 
     const passwordValidation = checkStringValidation(
@@ -147,7 +160,11 @@ export class User {
     );
 
     if (!passwordValidation.accepted) {
-      throw new Error(passwordValidation.message);
+      throw new CustomException(
+        passwordValidation.message,
+        400,
+        "Password validation failed"
+      );
     }
 
     const hashedPassword = await hashPassword(password);

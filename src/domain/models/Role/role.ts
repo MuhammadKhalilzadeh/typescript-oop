@@ -1,5 +1,3 @@
-import { CRUD } from "../../interfaces/event";
-
 export class Role {
   constructor(
     public name: "admin" | "reviewer" | "editor" = "editor",
@@ -22,23 +20,5 @@ export class Role {
       id: this.id,
       name: this.name,
     };
-  }
-
-  public create(role: Role) {
-    const event = new CRUD();
-    event.create({ title: "create", data: role, occured_at: new Date() });
-    return event; // This is a mock implementation
-  }
-
-  public update(role: Role) {
-    const event = new CRUD();
-    event.update({ title: "update", data: role, occured_at: new Date() });
-    return event; // This is a mock implementation
-  }
-
-  public delete(role: Role) {
-    const event = new CRUD();
-    event.delete({ title: "delete", data: role, occured_at: new Date() });
-    return event; // This is a mock implementation
   }
 }
