@@ -1,6 +1,8 @@
+import CustomException from "../../exceptions/custom.exception";
+
 export class Role {
   constructor(
-    public name: "admin" | "reviewer" | "editor" = "editor",
+    public name: "admin" | "reviewer" | "editor" = "admin",
     public id?: number
   ) {
     this.id = id;
@@ -20,5 +22,19 @@ export class Role {
       id: this.id,
       name: this.name,
     };
+  }
+
+  public create(name: "admin" | "reviewer" | "editor", id?: number): Role {
+    const role = new Role(name, id);
+
+    if (name !== "admin" && name !== "reviewer" && name !== "editor") {
+      throw new CustomException(
+        "Invalid role name",
+        400,
+        "Role validation failed"
+      );
+    }
+
+    return role;
   }
 }
