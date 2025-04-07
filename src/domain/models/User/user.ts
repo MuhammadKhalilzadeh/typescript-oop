@@ -1,3 +1,6 @@
+import { hashPassword } from "../../security/hasher";
+import { isValidEmail } from "../../validations/emailValidator";
+import { checkStringValidation } from "../../validations/stringValidator";
 import { Role } from "../Role/role";
 
 export class User {
@@ -5,7 +8,7 @@ export class User {
     public name: string,
     public surname: string,
     public email: string,
-    public password_hash: string,
+    public password: string,
     public role: Role,
     public created_at: Date,
     public last_login: Date,
@@ -15,7 +18,7 @@ export class User {
     this.name = name;
     this.surname = surname;
     this.email = email;
-    this.password_hash = password_hash;
+    this.password = password;
     this.role = role;
     this.created_at = created_at;
     this.last_login = last_login;
@@ -56,7 +59,7 @@ export class User {
       name: this.name,
       surname: this.surname,
       email: this.email,
-      password_hash: this.password_hash,
+      password: this.password,
       role: this.role,
       created_at: this.created_at,
       last_login: this.last_login,
@@ -76,8 +79,8 @@ export class User {
     this.email = email;
   }
 
-  public setPasswordHash(password_hash: string): void {
-    this.password_hash = password_hash;
+  public setPasswordHash(password: string): void {
+    this.password = password;
   }
 
   public setRole(role: Role): void {
@@ -90,5 +93,66 @@ export class User {
 
   public setLastLogin(last_login: Date): void {
     this.last_login = last_login;
+  }
+
+  public async hashUserPassword(password: string) {
+    this.password = await hashPassword(password);
+  }
+
+  public async create(
+    name: string,
+    surname: string,
+    email: string,
+    password: string,
+    role: Role
+  ): Promise<User> {
+    const user = new User(
+      name,
+      surname,
+      email,
+      password,
+      role,
+      new Date(),
+      new Date()
+    );
+
+    const nameValidation = checkStringValidation("name", name, 3, 128);
+
+    if (!nameValidation.accepted) {
+      throw new Error(nameValidation.message);
+    }
+
+    const surnameValidation = checkStringValidation("surname", surname, 3, 128);
+
+    if (!surnameValidation.accepted) {
+      throw new Error(surnameValidation.message);
+    }
+
+    const emailValidation = isValidEmail(email);
+
+    if (!emailValidation) {
+      throw new Error("Invalid email");
+    }
+
+    const passwordValidation = checkStringValidation(
+      "Password",
+      password,
+      8,
+      128,
+      true,
+      true,
+      true,
+      true,
+      "password"
+    );
+
+    if (!passwordValidation.accepted) {
+      throw new Error(passwordValidation.message);
+    }
+
+    const hashedPassword = await hashPassword(password);
+    user.password = hashedPassword;
+
+    return user;
   }
 }
